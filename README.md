@@ -1,64 +1,15 @@
-🌿 TazaEl – Smart Eco Hotel Waste Management System
-
-Overview
-
-TazaEl is an AI and IoT-powered smart waste management platform designed for eco-friendly hotels. The system transforms organic wastewater into valuable resources such as biogas, clean water, and organic fertilizer, helping hotels reduce costs while protecting the environment.
-
-🌐 Live Website:
-https://kairatalinur78-cpu.github.io/tazael/
-
-You can visit the link above to explore our project, interact with the dashboard, and see how the system works in real time.
-
-⸻
-
-Features
-
-* ♻️ Smart wastewater treatment
-* 🤖 AI-powered monitoring and optimization
-* 📊 Real-time IoT dashboard
-* 🌱 Biogas and organic fertilizer production
-* 💧 Water purification for reuse
-* 🎮 QR-based tourist dashboard with eco-cashback gamification
-
-⸻
-
-Technologies Used
-
-* HTML5
-* CSS3
-* JavaScript
-* Python
-* AI Algorithms
-* IoT Integration
-
-⸻
-
-Business Impact
-
-* 100% savings on septic tank service costs.
-* 30–40% reduction in gas and electricity expenses.
-* Estimated 8–10 months return on investment.
-* Supports sustainable tourism and the circular economy.
-
-⸻
-
-Development Team – IT LOGOS
-
-👨‍💻 Beisen Edige — Coder & Designer
-
-* Frontend development
-* UI/UX design
-* 3D modeling
-* Website interface design
-
-🤖 Kairat Alinur — AI Engineer
-
-* AI algorithms
-* IoT integration
-* Backend development
-
-📊 Erdaulet Kunanov — Researcher & Analyst
-
-* Financial modeling
-* Environmental analysis
-* Business strategy
+TazaEl is an innovative web project dedicated to environmental sustainability and waste management. This platform serves as a digital solution to improve urban ecological conditions and foster environmental responsibility within the community.
+🌐 Live Demo
+Experience the project in action here:
+👉 https://kairatalinur78-cpu.github.io/tazael/
+👨‍💻 About the Developer
+Hello, I am Beisen Edige. I am a dedicated Web Developer and Designer. I have built this project from the ground up, handling everything from the initial UI/UX concept and visual design to the complete frontend implementation. My goal is to bridge the gap between aesthetic design and functional performance to create user-centric digital experiences.
+🛠 Technical Stack
+ Frontend: HTML5, CSS3, JavaScript.
+ Design: User Interface (UI) & User Experience (UX) design.
+ Deployment: Hosted on GitHub Pages.
+🚀 Project Goal
+The TazaEl project aims to contribute to environmental solutions by optimizing waste management processes and raising awareness about ecological sustainability. It is designed to be accessible, intuitive, and impactful.
+📬 Contact
+I am always open to new opportunities, collaborations, or feedback. Feel free to reach out via my GitHub profile.
+Crafted with passion by Beisen Edige.
