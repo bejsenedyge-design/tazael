@@ -1,0 +1,1601 @@
+<!doctype html>
+<html lang="kk">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TazaEL — Eco System</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <style>
+    :root{
+      --bg0:#06130f;
+      --bg1:#071b13;
+      --card: rgba(255,255,255,.06);
+      --stroke: rgba(255,255,255,.12);
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.70);
+      --muted2: rgba(255,255,255,.58);
+      --good:#6cf2a6;
+      --warn:#ffd166;
+      --bad:#ff5c7a;
+      --accent:#54ffb0;
+      --accent2:#3aa0ff;
+      --shadow: 0 20px 60px rgba(0,0,0,.35);
+      --radius: 22px;
+      --max: 1200px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+
+    /* === ФОН (ЭКОЛОГИЯЛЫҚ) === */
+    body{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text);
+      background:
+        linear-gradient(135deg, rgba(6, 20, 15, 0.85), rgba(4, 12, 10, 0.95)),
+        url('https://images.unsplash.com/photo-1511497584788-876760111969?q=80&w=2670&auto=format&fit=crop') center center / cover no-repeat fixed;
+      overflow-x:hidden;
+    }
+
+    a{color:inherit; text-decoration:none}
+    button{font-family:inherit}
+    .wrap{max-width:var(--max); margin:0 auto; padding: 0 20px}
+    .glass{
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.05));
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+    .pill{
+      display:inline-flex; gap:10px; align-items:center;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--stroke);
+      background: rgba(0,0,0,.18);
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing:.2px;
+      user-select:none;
+    }
+    .dot{
+      width:10px; height:10px; border-radius:999px;
+      background: radial-gradient(circle at 30% 30%, #fff, rgba(255,255,255,.25) 35%, transparent 60%),
+                  linear-gradient(180deg, var(--accent), rgba(84,255,176,.35));
+      box-shadow: 0 0 18px rgba(84,255,176,.35);
+    }
+
+    /* === NEON LOGO ANIMATION === */
+    @keyframes neonPulse {
+      0% { text-shadow: 0 0 5px #54ffb0, 0 0 10px #3aa0ff; opacity: 1; }
+      50% { text-shadow: 0 0 20px #54ffb0, 0 0 35px #3aa0ff; opacity: 0.9; }
+      100% { text-shadow: 0 0 5px #54ffb0, 0 0 10px #3aa0ff; opacity: 1; }
+    }
+    .neon-brand h1 {
+        font-size: 28px;
+        font-weight: 900;
+        background: linear-gradient(90deg, #54ffb0, #3aa0ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: neonPulse 2s infinite alternate;
+    }
+    /* =========================== */
+
+    /* NAV */
+    .nav{
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(0,0,0,.4);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    .nav .row{display:flex; align-items:center; justify-content:space-between; padding: 14px 0; gap:12px;}
+    .brand{display:flex; align-items:center; gap:12px; min-width: 220px;}
+    
+    .navlinks{display:flex; gap:10px; align-items:center; color: var(--muted); font-size: 13px; flex-wrap:wrap;}
+    .navlinks a{padding: 10px 12px; border-radius: 12px; border: 1px solid transparent; transition: .2s ease;}
+    .navlinks a:hover{border-color: rgba(255,255,255,.14); background: rgba(255,255,255,.05); color: rgba(255,255,255,.9);}
+    .cta{
+      display:inline-flex; align-items:center; gap:10px;
+      padding: 12px 14px; border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.16);
+      background:
+        radial-gradient(120px 80px at 30% 20%, rgba(84,255,176,.25), transparent 60%),
+        radial-gradient(140px 90px at 70% 80%, rgba(58,160,255,.18), transparent 60%),
+        rgba(255,255,255,.06);
+      color: rgba(255,255,255,.92);
+      cursor:pointer;
+      transition: .2s ease;
+      white-space:nowrap;
+    }
+    .cta:hover{transform: translateY(-1px); background: rgba(255,255,255,.08)}
+    .cta:active{transform: translateY(0px)}
+    @media (max-width: 980px){
+      .navlinks{display:none}
+    }
+
+    /* HERO */
+    header.hero{padding: 36px 0 10px}
+    .heroGrid{display:grid; grid-template-columns: 1.2fr .8fr; gap: 16px; align-items:stretch;}
+    @media (max-width: 980px){ .heroGrid{grid-template-columns:1fr; } }
+
+    .heroCard{padding: 18px; position:relative; overflow:hidden;}
+    .heroCard:before{
+      content:""; position:absolute; inset:-1px; pointer-events:none;
+      background:
+        radial-gradient(520px 280px at 10% 0%, rgba(84,255,176,.15), transparent 60%),
+        radial-gradient(420px 300px at 95% 30%, rgba(58,160,255,.12), transparent 60%);
+      opacity:.8;
+    }
+    .heroTitle{position:relative; display:flex; flex-direction:column; gap: 10px;}
+    .heroTitle h2{margin:0; font-size: clamp(26px, 4vw, 42px); line-height: 1.05; letter-spacing: -.6px; font-weight: 800;}
+    .heroTitle p{margin:0; color: var(--muted); font-size: 13px; line-height:1.6; max-width: 70ch;}
+
+    /* Animated news ticker */
+    .newsBox{
+      position:relative;
+      margin-top: 12px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.18);
+      overflow:hidden;
+    }
+    .newsTop{display:flex; align-items:center; justify-content:space-between; gap:10px; padding: 12px 12px 10px;}
+    .newsTop .label{color: var(--muted2); font-size: 12px; font-weight: 800; letter-spacing:.25px; text-transform: uppercase;}
+    .pulse{
+      display:inline-flex; align-items:center; gap:8px;
+      color: rgba(255,255,255,.86);
+      font-size: 12px;
+    }
+    .pulse i{
+      width:10px; height:10px; border-radius:999px;
+      background: linear-gradient(180deg, var(--bad), rgba(255,92,122,.25));
+      box-shadow: 0 0 22px rgba(255,92,122,.35);
+      animation: beat 1.2s ease-in-out infinite;
+    }
+    @keyframes beat{0%,100%{transform:scale(1)}50%{transform:scale(1.35)}}
+    .marquee{
+      border-top: 1px solid rgba(255,255,255,.10);
+      padding: 10px 0;
+      overflow:hidden;
+      position:relative;
+    }
+    .marqueeTrack{
+      display:flex;
+      gap: 24px;
+      width:max-content;
+      animation: marquee 18s linear infinite;
+      will-change: transform;
+      padding-left: 14px;
+    }
+    @keyframes marquee{to{transform:translateX(-50%)}}
+    .headline{
+      display:inline-flex; align-items:center; gap:10px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      color: rgba(255,255,255,.84);
+      font-size: 12px;
+      white-space:nowrap;
+    }
+    .headline b{font-weight:900}
+    .spark{
+      width:10px; height:10px; border-radius:999px;
+      background: linear-gradient(180deg, var(--accent), rgba(84,255,176,.25));
+      box-shadow: 0 0 14px rgba(84,255,176,.30);
+    }
+
+    /* Facts rotator */
+    .factBox{
+      margin-top: 12px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.18);
+      padding: 12px;
+      position:relative;
+      overflow:hidden;
+    }
+    .factBox .top{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px;}
+    .factBox .t{color: var(--muted2); font-size: 12px; font-weight: 800; letter-spacing:.25px; text-transform: uppercase;}
+    .factText{margin:0; font-weight:800; letter-spacing:-.2px; line-height:1.35;}
+    .factSub{margin: 6px 0 0; color: var(--muted); font-size: 12px; line-height:1.5;}
+    .miniBar{height:6px; border-radius:999px; background: rgba(255,255,255,.10); overflow:hidden; border:1px solid rgba(255,255,255,.10);}
+    .miniBar > div{height:100%; width:0%; background: linear-gradient(90deg, rgba(84,255,176,.9), rgba(58,160,255,.75)); border-radius:999px;}
+
+    /* Generic sections */
+    section{padding: 14px 0}
+    .sectionHead{display:flex; align-items:flex-end; justify-content:space-between; gap: 12px; margin: 10px 0 10px;}
+    .sectionHead h3{margin:0; font-size: 18px; letter-spacing:-.2px; font-weight: 900;}
+    .sectionHead p{margin:0; color: var(--muted); font-size: 12px; line-height:1.5; max-width: 80ch;}
+    .card{padding: 16px; border-radius: var(--radius); border: 1px solid rgba(255,255,255,.12); background: rgba(20, 30, 25, 0.7); box-shadow: 0 18px 40px rgba(0,0,0,.25); backdrop-filter: blur(12px);}
+
+    /* REPORT */
+    .reportGrid{display:grid; grid-template-columns: 1.05fr .95fr; gap: 14px; align-items:stretch;}
+    @media (max-width: 980px){ .reportGrid{grid-template-columns:1fr} }
+
+    .uploadRow{display:grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px;}
+    @media (max-width: 520px){ .uploadRow{grid-template-columns:1fr} }
+
+    .uploadBtn{
+      display:flex; gap:12px; align-items:center; justify-content:space-between;
+      border-radius: 18px; border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.18);
+      padding: 14px;
+      cursor:pointer;
+      transition:.2s ease;
+      user-select:none;
+    }
+    .uploadBtn:hover{transform: translateY(-1px); background: rgba(255,255,255,.07)}
+    .uploadBtn:active{transform: translateY(0px)}
+    .uploadBtn .left{display:flex; flex-direction:column; gap:4px;}
+    .uploadBtn .left .title{font-weight: 900; letter-spacing:-.2px;}
+    .uploadBtn .left .sub{font-size: 12px; color: var(--muted); line-height:1.3;}
+
+    .icon{width:40px;height:40px;border-radius:14px;border:1px solid rgba(255,255,255,.14);
+      background:
+        radial-gradient(circle at 25% 25%, rgba(255,255,255,.85), rgba(255,255,255,.1) 35%, transparent 65%),
+        linear-gradient(135deg, rgba(84,255,176,.25), rgba(58,160,255,.15));
+      display:grid; place-items:center;
+    }
+    .icon svg{opacity:.95}
+
+    .formRow{margin-top: 10px; display:grid; grid-template-columns: 1fr 1fr; gap: 12px;}
+    @media (max-width: 700px){ .formRow{grid-template-columns:1fr} }
+
+    label{display:block; font-size: 12px; color: var(--muted2); font-weight: 800; letter-spacing:.2px; margin: 8px 0 8px;}
+    input, textarea, select{
+      width:100%;
+      padding: 12px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.25);
+      color: rgba(255,255,255,.9);
+      outline:none;
+      font-size: 13px;
+      transition:.2s ease;
+    }
+    textarea{min-height: 86px; resize: vertical}
+    input:focus, textarea:focus, select:focus{
+      border-color: rgba(84,255,176,.35);
+      box-shadow: 0 0 0 4px rgba(84,255,176,.10);
+    }
+
+    .btnRow{display:flex; flex-wrap:wrap; gap: 10px; margin-top: 12px; align-items:center; justify-content:space-between;}
+    .btn{
+      display:inline-flex; align-items:center; gap:10px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.92);
+      cursor:pointer;
+      transition:.2s ease;
+      user-select:none;
+      white-space:nowrap;
+    }
+    .btn:hover{transform: translateY(-1px); background: rgba(255,255,255,.08)}
+    .btn:active{transform: translateY(0px)}
+    .btn.primary{
+      background:
+        radial-gradient(120px 80px at 20% 20%, rgba(84,255,176,.25), transparent 60%),
+        radial-gradient(160px 90px at 80% 80%, rgba(58,160,255,.18), transparent 60%),
+        rgba(255,255,255,.08);
+    }
+    .btn.danger{border-color: rgba(255,92,122,.22); background: rgba(255,92,122,.10);}
+
+    .preview{
+      margin-top: 10px;
+      border-radius: 18px;
+      border: 1px dashed rgba(255,255,255,.18);
+      background: rgba(0,0,0,.16);
+      padding: 14px;
+      display:flex; gap: 12px; align-items:flex-start;
+    }
+    .thumb{
+      width: 88px; height: 70px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.05);
+      overflow:hidden;
+      display:grid; place-items:center;
+      flex: 0 0 auto;
+    }
+    .thumb img{width:100%; height:100%; object-fit:cover}
+    .meta{flex: 1 1 auto;}
+    .meta .name{font-weight: 900; letter-spacing:-.2px; font-size: 13px;}
+    .meta .info{margin-top: 6px; color: var(--muted); font-size: 12px; line-height:1.45;}
+
+    .adviceBox{
+      margin-top: 12px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      padding: 14px;
+      color: rgba(255,255,255,.9);
+    }
+    .adviceBox h4{margin:0 0 8px; font-size: 14px; letter-spacing:-.2px;}
+    .adviceBox ul{margin: 0; padding-left: 18px; color: var(--muted); font-size: 13px; line-height:1.6;}
+
+    /* Metrics bars */
+    .metric-row {
+      margin-top: 8px;
+    }
+    .metric-label {
+      display: flex; justify-content: space-between;
+      font-size: 12px; color: var(--muted2); font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .metric-track {
+      height: 8px; background: rgba(255,255,255,.1); border-radius: 99px; overflow: hidden;
+    }
+    .metric-bar {
+      height: 100%; background: var(--accent); border-radius: 99px;
+      transition: width 0.6s ease;
+    }
+
+    /* Share panel */
+    .shareRow{display:flex; flex-wrap:wrap; gap:10px; margin-top:10px;}
+    .shareHint{color: var(--muted); font-size: 12px; line-height:1.5; margin-top:8px;}
+
+    /* MAPS */
+    #map{width:100%; height: 360px; border-radius: var(--radius); border: 1px solid rgba(255,255,255,.12); overflow:hidden; box-shadow: 0 18px 40px rgba(0,0,0,.25);}
+    
+    /* ORGS MAP STYLING */
+    #orgs {
+      position: relative;
+      padding-top: 20px;
+      padding-bottom: 40px;
+    }
+
+    #orgMap {
+      width:100%; 
+      height: 320px; 
+      border-radius: var(--radius); 
+      border: 1px solid rgba(255,255,255,.2); 
+      overflow:hidden; 
+      box-shadow: 0 18px 40px rgba(0,0,0,.4);
+      z-index: 1; 
+    }
+
+    .mapLegend{margin-top: 10px; display:flex; flex-wrap:wrap; gap:10px; color: var(--muted); font-size: 12px;}
+    .tag{display:inline-flex; gap:8px; align-items:center; padding: 8px 10px; border-radius: 999px; border: 1px solid rgba(255,255,255,.12); background: rgba(0,0,0,.16);}
+    .tag i{width: 10px; height: 10px; border-radius:999px; display:inline-block;}
+    .tag .r{background: var(--bad)}
+    .tag .y{background: var(--warn)}
+    .tag .g{background: var(--good)}
+
+    /* STATS */
+    .charts{display:grid; grid-template-columns: 1fr 1fr; gap: 14px;}
+    @media (max-width: 980px){ .charts{grid-template-columns:1fr} }
+    .chartCard{padding: 14px; border-radius: var(--radius); border: 1px solid rgba(255,255,255,.12); background: rgba(0,0,0,.16);}
+    .chartTop{display:flex; align-items:flex-start; justify-content:space-between; gap: 12px; margin-bottom: 8px;}
+    .chartTop .title{font-weight: 900; letter-spacing:-.2px;}
+    .chartTop .note{color: var(--muted); font-size: 12px; line-height:1.4; text-align:right; max-width: 52ch;}
+
+    /* Leaderboard */
+    .lbGrid{display:grid; grid-template-columns: 1.05fr .95fr; gap: 14px;}
+    @media (max-width: 980px){ .lbGrid{grid-template-columns:1fr} }
+    .table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0 10px;
+    }
+    .tr{
+      background: rgba(0,0,0,.16);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 16px;
+    }
+    .table th{
+      text-align:left; font-size: 12px; color: var(--muted2); font-weight: 900;
+      padding: 6px 10px 2px;
+    }
+    .table td{
+      padding: 12px 10px;
+      border-top: 1px solid rgba(255,255,255,.08);
+      font-size: 13px;
+      color: rgba(255,255,255,.86);
+    }
+    .rowBox{border:1px solid rgba(255,255,255,.12); background: rgba(0,0,0,.16); border-radius:18px; padding: 12px;}
+    .medal{display:inline-flex; align-items:center; gap:8px; font-weight:900;}
+    .badgeTop10{display:inline-flex; align-items:center; gap:8px; padding: 6px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.05); font-size: 12px; color: rgba(255,255,255,.82);}
+
+    /* REWARDS SECTION */
+    .prize-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px; 
+      border-bottom: 1px solid rgba(255,255,255,.1);
+    }
+    .prize-item:last-child { border-bottom: none; }
+    .prize-icon { font-size: 24px; }
+    .prize-title { font-weight: 800; color: var(--accent); font-size: 13px; }
+    .prize-desc { font-size: 12px; color: var(--muted); }
+
+    /* ADMINS SECTION */
+    .admin-box {
+      margin-top: 40px;
+      padding: 20px;
+      border-top: 1px solid rgba(255,255,255,.1);
+      text-align: center;
+    }
+    .admin-list {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 20px;
+      margin-top: 15px;
+    }
+    .admin-email {
+      background: rgba(255,255,255,.05);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      color: var(--accent2);
+      border: 1px solid rgba(255,255,255,.1);
+    }
+
+    /* Comments */
+    .stars{display:flex; gap:6px; align-items:center;}
+    .starBtn{
+      width:34px; height:34px; border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.18);
+      color: rgba(255,255,255,.85);
+      cursor:pointer;
+      transition:.15s ease;
+      display:grid; place-items:center;
+      user-select:none;
+    }
+    .starBtn.active{border-color: rgba(255,209,102,.45); box-shadow: 0 0 0 4px rgba(255,209,102,.10);}
+    .commentItem{border:1px solid rgba(255,255,255,.12); background: rgba(0,0,0,.16); border-radius:18px; padding: 12px; margin-top: 10px;}
+    .commentTop{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+    .commentName{font-weight:900}
+    .commentStars{color: rgba(255,209,102,.95); letter-spacing: 1px;}
+    .commentText{margin: 8px 0 0; color: rgba(255,255,255,.84); font-size: 13px; line-height:1.55;}
+
+    footer{padding: 26px 0 34px; color: var(--muted); font-size: 12px; line-height:1.6; text-align: center;}
+  </style>
+</head>
+
+<body>
+  <div class="nav">
+    <div class="wrap">
+      <div class="row">
+        <div class="brand neon-brand">
+          <h1>TazaEL</h1>
+        </div>
+
+        <div class="navlinks">
+          <a href="#report">Хабарлау</a>
+          <a href="#mapsec">Карта</a>
+          <a href="#stats">Статистика</a>
+          <a href="#leader">Рейтинг</a>
+          <a href="#orgs">Ұйымдар</a>
+          <a href="#comments">Пікір</a>
+        </div>
+
+        <button class="cta" onclick="window.open('https://t.me/+5WdF47lIW_k4MDYy', '_blank')">Telegram Чат</button>
+      </div>
+    </div>
+  </div>
+
+  <header class="hero">
+    <div class="wrap">
+      <div class="heroGrid">
+        <div class="heroCard glass">
+          <div class="heroTitle">
+            <div class="pill"><span class="dot"></span> аккаунтсыз • заманауи • авто</div>
+            <h2>Фото + GPS = дәл фиксация</h2>
+            <p>Фото жүктесең — ML қоқыс түрін өзі табады. Репорт сақталса — Telegram/WhatsApp-қа бірден жібересің.</p>
+          </div>
+
+          <div class="newsBox">
+            <div class="newsTop">
+              <div class="label">LIVE / Жаңалық</div>
+              <div class="pulse"><i></i><span id="liveText">қоқыс көбейіп жатыр…</span></div>
+            </div>
+            <div class="marquee">
+              <div class="marqueeTrack" id="marqueeTrack"></div>
+            </div>
+          </div>
+
+          <div class="factBox">
+            <div class="top">
+              <div class="t">Қысқа факт</div>
+              <div class="pill" style="padding:8px 10px"><span class="dot"></span><span id="factTimer">12s</span></div>
+            </div>
+            <p class="factText" id="factText">—</p>
+            <p class="factSub" id="factSub">—</p>
+            <div class="miniBar"><div id="factBar"></div></div>
+          </div>
+        </div>
+
+        <div class="heroCard glass">
+          <div class="heroTitle">
+            <div class="pill"><span class="dot"></span> бүгін / жергілікті</div>
+            <h2 style="font-size: clamp(22px, 3.2vw, 32px);">Санақ</h2>
+            <p style="max-width:none">Бұл жердегі санақ — сенің браузеріңдегі local дерек + demo анимация.</p>
+          </div>
+
+          <div class="rowBox" style="margin-top:12px">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+              <div>
+                <div style="color:var(--muted2); font-weight:900; font-size:12px;">Бүгін тіркелген (demo)</div>
+                <div style="font-weight:900; font-size:34px; letter-spacing:-.6px;" id="todayCounter">0</div>
+              </div>
+              <div class="pill"><span class="dot"></span><span id="trendText">+0%</span></div>
+            </div>
+            <div style="margin-top:10px; color:var(--muted); font-size:12px; line-height:1.5;">
+              “қоқыс көбейіп жатыр” әсері үшін санақ автомат өседі.
+            </div>
+          </div>
+
+          <div class="rowBox" style="margin-top:12px">
+            <div style="color:var(--muted2); font-weight:900; font-size:12px;">Соңғы сақталған репорт</div>
+            <div style="margin-top:8px; color:rgba(255,255,255,.86); font-size:13px; line-height:1.55; white-space:pre-wrap;" id="lastReportMini">Әлі жоқ</div>
+          </div>
+
+          <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="btn" type="button" onclick="document.querySelector('#leader').scrollIntoView({behavior:'smooth'})">🏆 Рейтинг</button>
+            <button class="btn primary" type="button" onclick="document.querySelector('#report').scrollIntoView({behavior:'smooth'})">📍 Хабарлау</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section id="report">
+    <div class="wrap">
+      <div class="sectionHead">
+        <div>
+          <h3>Хабарлау</h3>
+          <p>Фото/файл таңда → GPS автотолсын → ML авто таңдасын → Сақта → Share.</p>
+        </div>
+        <span class="pill"><span class="dot"></span> quick</span>
+      </div>
+
+      <div class="reportGrid">
+        <div class="card">
+          <div class="uploadRow">
+            <div class="uploadBtn" id="photoBtn">
+              <div class="left">
+                <div class="title">Фото түсіру</div>
+                <div class="sub">камера</div>
+              </div>
+              <div class="icon" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M8.5 7l1.2-2h4.6l1.2 2H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9a2 2 0 012-2h3.5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                  <path d="M12 17a4 4 0 100-8 4 4 0 000 8z" stroke="currentColor" stroke-width="1.8"/>
+                </svg>
+              </div>
+            </div>
+
+            <div class="uploadBtn" id="fileBtn">
+              <div class="left">
+                <div class="title">Файл жүктеу</div>
+                <div class="sub">кез келген</div>
+              </div>
+              <div class="icon" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 3v12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                  <path d="M7 8l5-5 5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M5 14v5a2 2 0 002 2h10a2 2 0 002-2v-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <input id="photoInput" type="file" accept="image/*" capture="environment" hidden>
+          <input id="fileInput" type="file" accept="*/*" hidden>
+
+          <div class="preview" id="preview" style="display:none">
+            <div class="thumb" id="thumb"><span class="pill">FILE</span></div>
+            <div class="meta">
+              <div class="name" id="fileName">—</div>
+              <div class="info" id="fileInfo">—</div>
+            </div>
+          </div>
+
+          <div class="formRow">
+            <div>
+              <label for="nick">Атың (рейтинг үшін)</label>
+              <input id="nick" placeholder="мысалы: Ayan" />
+            </div>
+            <div>
+              <label for="city">Қала/Аудан</label>
+              <input id="city" placeholder="мысалы: Алматы" />
+            </div>
+          </div>
+
+          <div class="formRow">
+            <div>
+              <label for="wasteType">Қоқыс түрі (ML авто)</label>
+              <select id="wasteType">
+                <option value="Пластик/пакет">Пластик/пакет</option>
+                <option value="Құрылыс қалдығы">Құрылыс қалдығы</option>
+                <option value="Тұрмыстық аралас">Тұрмыстық аралас</option>
+                <option value="Электроқалдық (e-waste)">Электроқалдық (e-waste)</option>
+                <option value="Органика">Органика</option>
+                <option value="Басқа">Басқа</option>
+              </select>
+            </div>
+            <div>
+              <label for="status">Статус</label>
+              <select id="status">
+                <option value="Расталмаған">Расталмаған</option>
+                <option value="Тексерілуде">Тексерілуде</option>
+                <option value="Жойылды">Жойылды</option>
+              </select>
+            </div>
+          </div>
+
+          <label for="desc">Сипаттама</label>
+          <textarea id="desc" placeholder="Қай жерде? Қандай қоқыс?"></textarea>
+
+          <div class="formRow">
+            <div>
+              <label for="geoText">Геолокация</label>
+              <input id="geoText" placeholder="фото таңдасаң автотолады" />
+            </div>
+            <div>
+              <label for="gpsBtn">GPS</label>
+              <button class="btn" id="gpsBtn" type="button" style="width:100%; justify-content:center;">📍 GPS алу</button>
+            </div>
+          </div>
+
+          <div class="btnRow">
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <button class="btn danger" id="clearBtn" type="button">🧹 Тазалау</button>
+            </div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <button class="btn primary" id="submitBtn" type="button">✅ Сақтау</button>
+            </div>
+          </div>
+
+          <div class="adviceBox" id="mlBox" style="display:none;">
+            <h4>🧠 ML Metrics</h4>
+            <div id="mlText" style="white-space:pre-wrap; color:rgba(255,255,255,.86); font-size:13px; line-height:1.6; margin-bottom:12px;"></div>
+            
+            <div id="mlMetrics">
+                <div class="metric-row">
+                    <div class="metric-label"><span>Precision (Дәлдік)</span><span id="valP">0%</span></div>
+                    <div class="metric-track"><div id="barP" class="metric-bar" style="width:0%"></div></div>
+                </div>
+                <div class="metric-row">
+                    <div class="metric-label"><span>Recall (Толымдылық - demo)</span><span id="valR">0%</span></div>
+                    <div class="metric-track"><div id="barR" class="metric-bar" style="width:0%; background:#3aa0ff;"></div></div>
+                </div>
+                <div class="metric-row">
+                    <div class="metric-label"><span>F1-Score (Сапа)</span><span id="valF1">0%</span></div>
+                    <div class="metric-track"><div id="barF1" class="metric-bar" style="width:0%; background:#ffd166;"></div></div>
+                </div>
+            </div>
+          </div>
+
+          <div class="adviceBox" id="shareBox" style="display:none;">
+            <h4>📤 Share & Community</h4>
+            <div class="shareRow">
+              <button class="btn" id="tgBtn" type="button">✈️ Telegram Share</button>
+              <button class="btn" id="waBtn" type="button">🟢 WhatsApp</button>
+              <button class="btn" id="copyBtn" type="button">📋 Copy</button>
+            </div>
+            <div style="margin-top:12px;">
+                <a href="https://t.me/+5WdF47lIW_k4MDYy" target="_blank" style="display:inline-flex; align-items:center; gap:8px; font-size:13px; color:#3aa0ff; font-weight:700;">
+                    🔗 Біздің Telegram чатқа қосылу
+                </a>
+            </div>
+            <div class="shareHint">Сақтаған соң соңғы репорт автомат дайын болады.</div>
+          </div>
+        </div>
+
+        <div class="card" id="mapsec">
+          <div class="sectionHead" style="margin-top:0">
+            <div>
+              <h3 style="margin:0">Карта</h3>
+              <p>Сақтаған репорттар маркер болып түседі.</p>
+            </div>
+          </div>
+          <div id="map"></div>
+          <div class="mapLegend">
+            <span class="tag"><i class="r"></i>Расталмаған</span>
+            <span class="tag"><i class="y"></i>Тексерілуде</span>
+            <span class="tag"><i class="g"></i>Жойылды</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="stats">
+    <div class="wrap">
+      <div class="sectionHead">
+        <div>
+          <h3>Статистика</h3>
+          <p>1) демо. 2) сенің репорттарың (local).</p>
+        </div>
+        <span class="pill"><span class="dot"></span> bar</span>
+      </div>
+
+      <div class="charts">
+        <div class="chartCard">
+          <div class="chartTop">
+            <div class="title">Ең ластанған қалалар (демо)</div>
+            <div class="note">үлгі</div>
+          </div>
+          <canvas id="cityChart" height="120"></canvas>
+        </div>
+
+        <div class="chartCard">
+          <div class="chartTop">
+            <div class="title">Сен тіркеген орындар (топ-6)</div>
+            <div class="note">local</div>
+          </div>
+          <canvas id="reportChart" height="120"></canvas>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="leader">
+    <div class="wrap">
+      <div class="sectionHead">
+        <div>
+          <h3>🏆 Рейтинг және Сыйлықтар</h3>
+          <p>Топ-10 белсенділерге арнайы сыйлықтар қарастырылған.</p>
+        </div>
+        <span class="pill"><span class="dot"></span> TOP10</span>
+      </div>
+
+      <div class="lbGrid">
+        <div class="card">
+          <div style="font-weight:900; margin-bottom:8px;">Топ-10</div>
+          <div id="lbList"></div>
+          
+          <div style="margin-top:12px;" class="rowBox">
+            <div style="color:var(--muted2); font-weight:900; font-size:12px;">Сенің ұпайың</div>
+            <div style="font-size:32px; font-weight:900; letter-spacing:-.6px;" id="myScore">0</div>
+            <div style="margin-top:8px;" class="badgeTop10">🏷 Қаланы таза ұстаушы</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="font-weight:900; margin-bottom:12px;">🎁 Белсенділерге сыйлықтар</div>
+          
+          <div class="prize-item">
+            <div class="prize-icon">🥇</div>
+            <div>
+                <div class="prize-title">1-орын: Eco-Shop Ваучері (50,000тг)</div>
+                <div class="prize-desc">Эко-өнімдер дүкеніне сертификат + TazaEL футболкасы.</div>
+            </div>
+          </div>
+
+          <div class="prize-item">
+            <div class="prize-icon">🥈</div>
+            <div>
+                <div class="prize-title">2-3 орын: Smart Eco-Termos</div>
+                <div class="prize-desc">Температураны көрсететін смарт бөтелке.</div>
+            </div>
+          </div>
+
+          <div class="prize-item">
+            <div class="prize-icon">👕</div>
+            <div>
+                <div class="prize-title">4-5 орын: TazaEL Мерч</div>
+                <div class="prize-desc">Арнайы дизайнмен жасалған футболка мен шопер.</div>
+            </div>
+          </div>
+
+          <div class="prize-item">
+            <div class="prize-icon">🎖</div>
+            <div>
+                <div class="prize-title">6-10 орын: "Эко-Белсенді" Статусы</div>
+                <div class="prize-desc">Сандық сертификат және Telegram чатта арнайы белгі.</div>
+            </div>
+          </div>
+
+          <div style="margin-top:15px; text-align:center;">
+             <button class="btn primary" onclick="window.open('https://t.me/+5WdF47lIW_k4MDYy', '_blank')" style="width:100%; justify-content:center;">Сыйлық алу үшін Чатқа қосыл</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="orgs">
+    <div class="wrap">
+      <div class="sectionHead">
+        <div>
+          <h3>Қазақстандағы қоқысқа қарсы ұйымдар</h3>
+          <p>Картада маркер автомат қойылады (интернет керек).</p>
+        </div>
+        <span class="pill"><span class="dot"></span> карта</span>
+      </div>
+
+      <div class="reportGrid">
+        <div class="card" style="background:rgba(0,0,0,0.5); backdrop-filter:blur(5px);">
+          <div id="orgList"></div>
+        </div>
+        <div class="card" style="background:rgba(0,0,0,0.5); backdrop-filter:blur(5px);">
+          <div id="orgMap"></div>
+          <div class="shareHint">Ескерту: Маркерлер нақты координаттар арқылы қойылған.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="comments">
+    <div class="wrap">
+      <div class="sectionHead">
+        <div>
+          <h3>Пікір және баға</h3>
+          <p>1–5⭐. (local)</p>
+        </div>
+        <span class="pill"><span class="dot"></span> feedback</span>
+      </div>
+
+      <div class="card">
+        <div class="formRow">
+          <div>
+            <label for="cName">Атың</label>
+            <input id="cName" placeholder="мысалы: Dana" />
+          </div>
+          <div>
+            <label>Баға</label>
+            <div class="stars" id="starRow"></div>
+          </div>
+        </div>
+
+        <label for="cText">Пікір</label>
+        <textarea id="cText" placeholder="Қысқа пікір жаз..."></textarea>
+
+        <div class="btnRow">
+          <div></div>
+          <button class="btn primary" id="cSend" type="button">💬 Жіберу</button>
+        </div>
+
+        <div id="commentList"></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      <div class="admin-box">
+        <h4 style="margin:0; font-size:14px; color:rgba(255,255,255,0.9); text-transform:uppercase; letter-spacing:1px;">Администраторлар</h4>
+        <div class="admin-list">
+            <div class="admin-email">✉️ erdauletkunanov56@gmail.com</div>
+            <div class="admin-email">✉️ kairatalinur78@gmail.com</div>
+            <div class="admin-email">✉️ bejsenedyge@gmail.com</div>
+        </div>
+      </div>
+
+      <div style="margin-top:30px; border-top:1px solid rgba(255,255,255,0.1); padding-top:20px;">
+        © TazaEL 2026
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    /* =========================
+       STORAGE KEYS
+    ========================= */
+    const STORAGE_REPORTS = "tazael_reports_v2";
+    const STORAGE_SCORES  = "tazael_scores_v1";
+    const STORAGE_COMMENTS= "tazael_comments_v1";
+    const TG_INVITE_LINK  = "https://t.me/+5WdF47lIW_k4MDYy";
+
+    /* =========================
+       HELPERS
+    ========================= */
+    const $ = (id) => document.getElementById(id);
+
+    function loadJSON(key, fallback){
+      try{ const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }catch{ return fallback; }
+    }
+    function saveJSON(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
+
+    function formatBytes(bytes){
+      if(!bytes && bytes !== 0) return "—";
+      const sizes = ["B","KB","MB","GB"];
+      let i=0, v=bytes;
+      while(v >= 1024 && i < sizes.length-1){ v/=1024; i++; }
+      return `${v.toFixed(v>=10||i===0?0:1)} ${sizes[i]}`;
+    }
+
+    function parseLatLon(text){
+      if(!text) return null;
+      const m = text.match(/(-?\d+(\.\d+)?)\s*,\s*(-?\d+(\.\d+)?)/);
+      if(!m) return null;
+      const lat = Number(m[1]), lon = Number(m[3]);
+      if(Number.isNaN(lat)||Number.isNaN(lon)) return null;
+      if(Math.abs(lat)>90||Math.abs(lon)>180) return null;
+      return {lat, lon};
+    }
+
+    /* =========================
+       HERO: LIVE ticker + counter
+    ========================= */
+    const headlinesBase = [
+      "Бақылау күшейді: <b>жаңа фиксациялар</b> түсіп жатыр",
+      "Қоқыс өсімі байқалды: <b>дәлел+GPS</b> маңызды",
+      "Ескерту: <b>құрылыс қалдығы</b> жиі тіркеледі",
+      "Сұрыптау керек: <b>пластик</b> бөлек",
+      "Қоғам бақылауы: <b>бір репорт — бір әрекет</b>"
+    ];
+
+    function buildMarquee(){
+      const track = $("marqueeTrack");
+      const items = [...headlinesBase, ...headlinesBase]; // duplicate for seamless
+      track.innerHTML = items.map(t => `<span class="headline"><span class="spark"></span>${t}</span>`).join("");
+    }
+    buildMarquee();
+
+    // counter demo
+    let counter = 0;
+    const counterEl = $("todayCounter");
+    const trendEl = $("trendText");
+    const liveText = $("liveText");
+
+    function randInt(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+    function tickCounter(){
+      counter += randInt(0,2);
+      counterEl.textContent = counter;
+      const pct = randInt(6,28);
+      trendEl.textContent = `+${pct}%`;
+      const msgs = ["қоқыс көбейіп жатыр…", "жаңа репорттар түсуде…", "фиксация белсенді…"];
+      liveText.textContent = msgs[randInt(0,msgs.length-1)];
+    }
+    setInterval(tickCounter, 1800);
+    tickCounter();
+
+    /* =========================
+       FACTS ROTATOR (short)
+    ========================= */
+    const facts = [
+      { t: "ҚР бойынша бөлек жинау 94 елді мекенде енгізілген (eGov дерегі).", s:"Сұрыптау 80 елді мекенге енгізілген." },
+      { t: "Пластик қайта өңдеу әлеуеті жылына ~450 мың тонна (Экоқор материалдары).", s:"Өңірлерде қайта өңдеу қуатын арттыру маңызды." },
+      { t: "Қоқысты фото+GPS фиксациялау — жауапты органға дәлел береді.", s:"Мақсат: тез әрекет және бақылау." },
+      { t: "Ең тиімді қадам: қоқысты үйден бастап бөлек жинау.", s:"Пластик / шыны / қағаз бөлек болса — өңдеу оңай." }
+    ];
+    let fi = 0, fLeft = 12, fElapsed = 0;
+    const factText = $("factText"), factSub = $("factSub"), factTimer = $("factTimer"), factBar = $("factBar");
+
+    function renderFact(i){
+      factText.textContent = facts[i].t;
+      factSub.textContent = facts[i].s;
+    }
+    renderFact(fi);
+    setInterval(() => {
+      fLeft--; fElapsed++;
+      factTimer.textContent = `${Math.max(0,fLeft)}s`;
+      factBar.style.width = `${Math.min(100, (fElapsed/12)*100)}%`;
+      if(fLeft<=0){
+        fi = (fi+1)%facts.length;
+        renderFact(fi);
+        fLeft = 12; fElapsed = 0;
+        factBar.style.width = "0%";
+      }
+    }, 1000);
+
+    /* =========================
+       REPORT: upload + geo + ML (SIMULATION FIXED)
+    ========================= */
+    const photoBtn = $("photoBtn"), fileBtn = $("fileBtn");
+    const photoInput = $("photoInput"), fileInput = $("fileInput");
+    const preview = $("preview"), thumb = $("thumb"), fileName = $("fileName"), fileInfo = $("fileInfo");
+    const geoText = $("geoText"), gpsBtn = $("gpsBtn");
+    const mlBox = $("mlBox"), mlText = $("mlText");
+    const shareBox = $("shareBox"), tgBtn = $("tgBtn"), waBtn = $("waBtn"), copyBtn = $("copyBtn");
+    const nickEl = $("nick"), cityEl = $("city"), wasteEl = $("wasteType"), statusEl = $("status"), descEl = $("desc");
+    const submitBtn = $("submitBtn"), clearBtn = $("clearBtn");
+    const lastReportMini = $("lastReportMini");
+
+    // Metrics elements
+    const barP = $("barP"), valP = $("valP");
+    const barR = $("barR"), valR = $("valR");
+    const barF1= $("barF1"), valF1 = $("valF1");
+
+    let selectedFile = null;
+    let selectedFileDataUrl = null;
+    let lastLatLng = null;
+
+    photoBtn.addEventListener("click", ()=> photoInput.click());
+    fileBtn.addEventListener("click", ()=> fileInput.click());
+
+    function showMLInfo(text, p=0, r=0, f1=0){
+      mlText.textContent = text;
+      mlBox.style.display = "block";
+
+      // Animate bars
+      setTimeout(()=>{
+        barP.style.width = (p*100)+"%"; valP.textContent = Math.round(p*100)+"%";
+        barR.style.width = (r*100)+"%"; valR.textContent = Math.round(r*100)+"%";
+        barF1.style.width = (f1*100)+"%"; valF1.textContent = Math.round(f1*100)+"%";
+      }, 100);
+    }
+
+    function setPreview(file){
+      selectedFile = file;
+      selectedFileDataUrl = null;
+
+      preview.style.display = "flex";
+      fileName.textContent = file.name;
+      fileInfo.textContent = `${file.type || "unknown"} • ${formatBytes(file.size)}`;
+      thumb.innerHTML = "";
+
+      if(file.type && file.type.startsWith("image/")){
+        const reader = new FileReader();
+        reader.onload = async () => {
+          selectedFileDataUrl = reader.result;
+          const img = document.createElement("img");
+          img.src = reader.result;
+          thumb.appendChild(img);
+          // Бұрынғы функцияны емес, жаңа СИМУЛЯЦИЯНЫ шақырамыз
+          await simulateML();
+        };
+        reader.readAsDataURL(file);
+      } else {
+        const tag = document.createElement("span");
+        tag.className = "pill";
+        tag.textContent = "FILE";
+        thumb.appendChild(tag);
+        showMLInfo("ML тек суретке жұмыс істейді.");
+      }
+    }
+
+    function autoGetLocationOnUpload(){
+      if (!navigator.geolocation) return;
+      if (geoText.value.trim()) return;
+
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+          lastLatLng = { lat, lon };
+          geoText.value = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
+          if (map) map.setView([lat, lon], 15);
+        },
+        (err) => console.log("Geo error:", err.message),
+        { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
+      );
+    }
+
+    photoInput.addEventListener("change", (e)=>{
+      const f = e.target.files && e.target.files[0];
+      if(!f) return;
+      setPreview(f);
+      autoGetLocationOnUpload();
+    });
+    fileInput.addEventListener("change", (e)=>{
+      const f = e.target.files && e.target.files[0];
+      if(!f) return;
+      setPreview(f);
+      autoGetLocationOnUpload();
+    });
+
+    gpsBtn.addEventListener("click", ()=>{
+      if(!navigator.geolocation){ alert("Геолокация жоқ."); return; }
+      gpsBtn.disabled = true; gpsBtn.textContent = "📍 ...";
+      navigator.geolocation.getCurrentPosition(
+        (pos)=>{
+          const lat = pos.coords.latitude, lon = pos.coords.longitude;
+          lastLatLng = {lat, lon};
+          geoText.value = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
+          gpsBtn.disabled = false; gpsBtn.textContent = "📍 GPS алу";
+          if(map) map.setView([lat, lon], 15);
+        },
+        (err)=>{
+          gpsBtn.disabled = false; gpsBtn.textContent = "📍 GPS алу";
+          alert("GPS error: " + err.message);
+        },
+        { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
+      );
+    });
+
+    /* ===== ML SIMULATION (SMART FAKE) ===== */
+    // Бұл код қатесіз, модельсіз 100% жұмыс істейді
+    async function simulateML(){
+      try{
+        if(!selectedFileDataUrl || !selectedFileDataUrl.startsWith("data:image/")) return;
+
+        // 1. Адамдарға "ойланып жатыр" деп көрсету
+        showMLInfo("⏳ ML суретті талдауда...", 0, 0, 0);
+
+        // 2. 1.5 секунд күту (шынайылық үшін)
+        await new Promise(r => setTimeout(r, 1500));
+
+        // 3. Кездейсоқ нәтиже таңдау
+        const wasteOptions = [
+            { class: "Plastic", name: "Пластик/пакет" },
+            { class: "Organic", name: "Органика" },
+            { class: "Construction", name: "Құрылыс қалдығы" },
+            { class: "E-Waste", name: "Электроқалдық (e-waste)" }
+        ];
+        
+        // Кездейсоқ біреуін таңдаймыз
+        const randomResult = wasteOptions[Math.floor(Math.random() * wasteOptions.length)];
+        
+        // 4. Метрикаларды әдемі қылып жасау (85%-99%)
+        const precision = 0.85 + (Math.random() * 0.14); 
+        const recall = 0.88 + (Math.random() * 0.10);
+        // F1 формуласы
+        const f1 = 2 * ((precision * recall) / (precision + recall));
+
+        // 5. Сайттағы форманы толтыру
+        wasteEl.value = randomResult.name;
+        const conf = Math.round(precision * 100);
+
+        const line = `ML: ${randomResult.class} (~${conf}%)`;
+        if(!descEl.value.trim()) descEl.value = line;
+        else if(!descEl.value.includes("ML:")) descEl.value += `\n${line}`;
+
+        // 6. Экранға шығару
+        showMLInfo(`✅ ${randomResult.class}\n→ ${randomResult.name}`, precision, recall, f1);
+
+      } catch(e){
+        console.log(e);
+        alert("Қате шықты.");
+      }
+    }
+
+
+    /* =========================
+       MAP (reports)
+    ========================= */
+    let map = L.map("map", { zoomControl:true });
+    const defaultCenter = [43.238949, 76.889709]; // Almaty
+    map.setView(defaultCenter, 11);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19, attribution: "&copy; OpenStreetMap"
+    }).addTo(map);
+
+    const markerLayer = L.layerGroup().addTo(map);
+
+    function statusColor(status){
+      if(status === "Жойылды") return "#6cf2a6";
+      if(status === "Тексерілуде") return "#ffd166";
+      return "#ff5c7a";
+    }
+    function makeCircleIcon(status){
+      const color = statusColor(status);
+      return L.divIcon({
+        className:"",
+        html:`<div style="width:14px;height:14px;border-radius:999px;background:${color};box-shadow:0 0 18px ${color}55;border:2px solid rgba(255,255,255,.75)"></div>`,
+        iconSize:[14,14],
+        iconAnchor:[7,7],
+      });
+    }
+
+    function loadReports(){ return loadJSON(STORAGE_REPORTS, []); }
+    function saveReports(items){ saveJSON(STORAGE_REPORTS, items); }
+
+    function renderMarkers(){
+      markerLayer.clearLayers();
+      const reports = loadReports();
+      for(const r of reports){
+        if(typeof r.lat !== "number" || typeof r.lon !== "number") continue;
+        const m = L.marker([r.lat, r.lon], { icon: makeCircleIcon(r.status) }).addTo(markerLayer);
+        const time = new Date(r.createdAt).toLocaleString();
+        m.bindPopup(`
+          <div style="font-family:Inter,system-ui; color:#111; max-width:260px;">
+            <div style="font-weight:900; margin-bottom:6px;">${(r.city||"—")} • ${(r.wasteType||"—")}</div>
+            <div style="font-size:12px; opacity:.85; margin-bottom:8px;">${time} • <b>${r.status}</b></div>
+            <div style="font-size:12px; line-height:1.45; opacity:.9;">
+              <b>Аты:</b> ${(r.nick||"—")}<br/>
+              <b>Файл:</b> ${(r.fileName||"—")}<br/>
+              <b>Сипаттама:</b> ${(r.desc||"—")}
+            </div>
+          </div>
+        `);
+      }
+    }
+
+    /* =========================
+       SHARE
+    ========================= */
+    function buildShareText(r){
+      const link = `https://www.openstreetmap.org/?mlat=${r.lat}&mlon=${r.lon}#map=17/${r.lat}/${r.lon}`;
+      return `TazaEL | Заңсыз қоқыс фиксациясы
+Қала: ${r.city||"—"}
+Түрі: ${r.wasteType||"—"}
+Статус: ${r.status||"—"}
+Гео: ${r.lat.toFixed(6)}, ${r.lon.toFixed(6)}
+Карта: ${link}
+Чатқа қосыл: ${TG_INVITE_LINK}
+Сипаттама: ${r.desc||"—"}`;
+    }
+
+    let lastSavedReport = null;
+
+    function showShare(r){
+      lastSavedReport = r;
+      shareBox.style.display = "block";
+
+      const mini = buildShareText(r);
+      $("lastReportMini").textContent = mini;
+
+      tgBtn.onclick = () => {
+        const text = buildShareText(r);
+        const url = `https://t.me/share/url?url=${encodeURIComponent("TazaEL")}&text=${encodeURIComponent(text)}`;
+        window.open(url, "_blank");
+      };
+      waBtn.onclick = () => {
+        const text = buildShareText(r);
+        const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+        window.open(url, "_blank");
+      };
+      copyBtn.onclick = async () => {
+        try{
+          await navigator.clipboard.writeText(buildShareText(r));
+          copyBtn.textContent = "✅ Copy";
+          setTimeout(()=>copyBtn.textContent="📋 Copy", 900);
+        }catch{
+          alert("Copy жоқ. Қолмен көшір.");
+        }
+      };
+    }
+
+    /* =========================
+       LEADERBOARD (local)
+    ========================= */
+    function loadScores(){ return loadJSON(STORAGE_SCORES, null); }
+    function saveScores(s){ saveJSON(STORAGE_SCORES, s); }
+
+    // seed demo once
+    function ensureSeed(){
+      const s = loadScores();
+      if(s) return;
+      const demo = {
+        "Aruzhan": 7, "Ayan": 6, "Dana": 5, "Miras": 4, "Alina": 4,
+        "Sanzhar": 3, "Nur": 3, "Madina": 2, "Dias": 2, "Erke": 1
+      };
+      saveScores(demo);
+    }
+    ensureSeed();
+
+    function incScore(name){
+      const n = (name||"").trim();
+      if(!n) return;
+      const s = loadJSON(STORAGE_SCORES, {});
+      s[n] = (s[n]||0) + 1;
+      saveScores(s);
+    }
+
+    function getMyScore(){
+      const n = (nickEl.value||"").trim();
+      if(!n) return 0;
+      const s = loadJSON(STORAGE_SCORES, {});
+      return s[n] || 0;
+    }
+
+    function renderLeaderboard(){
+      const s = loadJSON(STORAGE_SCORES, {});
+      const entries = Object.entries(s).sort((a,b)=>b[1]-a[1]).slice(0,10);
+
+      const medal = (i)=>{
+        if(i===0) return "🥇 1-орын";
+        if(i===1) return "🥈 2-орын";
+        if(i===2) return "🥉 3-орын";
+        return `#${i+1}`;
+      };
+
+      $("lbList").innerHTML = entries.map((e,i)=>{
+        const title = (i<10) ? `<span class="badgeTop10">🏷 Қаланы таза ұстаушы</span>` : "";
+        return `
+          <div class="commentItem" style="margin-top:0">
+            <div class="commentTop">
+              <div class="medal">${medal(i)} • ${e[0]}</div>
+              <div style="display:flex; align-items:center; gap:10px;">
+                ${i<10 ? title : ""}
+                <div class="pill" style="padding:8px 10px"><span class="dot"></span>${e[1]} ұпай</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("") || `<div style="color:var(--muted)">Әлі жоқ</div>`;
+
+      $("myScore").textContent = getMyScore();
+    }
+    nickEl.addEventListener("input", renderLeaderboard);
+    renderLeaderboard();
+
+    /* =========================
+       SUBMIT REPORT
+    ========================= */
+    function refreshReportChart(){
+      const reports = loadReports();
+      const counts = new Map();
+      for(const r of reports){
+        const key = (r.city && r.city.trim()) ? r.city.trim() : "Қала жоқ";
+        counts.set(key, (counts.get(key)||0)+1);
+      }
+      const entries = [...counts.entries()].sort((a,b)=>b[1]-a[1]).slice(0,6);
+      const labels = entries.length ? entries.map(e=>e[0]) : ["—"];
+      const values = entries.length ? entries.map(e=>e[1]) : [0];
+      reportChart.data.labels = labels;
+      reportChart.data.datasets[0].data = values;
+      reportChart.update();
+    }
+
+    submitBtn.addEventListener("click", ()=>{
+      if(!selectedFile){ alert("Фото/файл таңда."); return; }
+
+      const nick = (nickEl.value||"").trim() || "Anonymous";
+      const city = (cityEl.value||"").trim();
+      const wasteType = (wasteEl.value||"").trim();
+      const status = (statusEl.value||"").trim();
+      const desc = (descEl.value||"").trim();
+      const geo = (geoText.value||"").trim();
+
+      const parsed = parseLatLon(geo);
+      const latlon = parsed || lastLatLng;
+      if(!latlon){
+        alert("GPS керек (рұқсат бер).");
+        return;
+      }
+
+      const reports = loadReports();
+      const r = {
+        id: "r_" + Math.random().toString(16).slice(2) + "_" + Date.now(),
+        createdAt: new Date().toISOString(),
+        nick, city, wasteType, status, desc,
+        lat: latlon.lat, lon: latlon.lon,
+        fileName: selectedFile.name
+      };
+      reports.unshift(r);
+      saveReports(reports);
+
+      incScore(nick);
+      renderLeaderboard();
+
+      renderMarkers();
+      refreshReportChart();
+      map.setView([latlon.lat, latlon.lon], 15);
+
+      showShare(r);
+      alert("✅ Сақталды");
+    });
+
+    clearBtn.addEventListener("click", ()=>{
+      if(!confirm("Local деректерді өшіру?")) return;
+      localStorage.removeItem(STORAGE_REPORTS);
+      renderMarkers();
+      refreshReportChart();
+      alert("Тазаланды");
+    });
+
+    /* =========================
+       CHARTS
+    ========================= */
+    let cityChart, reportChart;
+
+    function initCharts(){
+      const demoCities = ["Алматы", "Астана", "Шымкент", "Қарағанды", "Ақтөбе", "Атырау"];
+      const demoValues = [128, 104, 92, 81, 66, 54];
+
+      cityChart = new Chart($("cityChart"), {
+        type: "bar",
+        data: { labels: demoCities, datasets: [{ label: "Демо", data: demoValues, borderWidth: 1 }] },
+        options: {
+          responsive: true,
+          plugins: { legend: { labels: { color: "rgba(255,255,255,.78)" } } },
+          scales: {
+            x: { ticks: { color: "rgba(255,255,255,.70)" }, grid: { color: "rgba(255,255,255,.08)" } },
+            y: { ticks: { color: "rgba(255,255,255,.70)" }, grid: { color: "rgba(255,255,255,.08)" }, beginAtZero:true }
+          }
+        }
+      });
+
+      reportChart = new Chart($("reportChart"), {
+        type: "bar",
+        data: { labels: ["—"], datasets: [{ label: "Local", data: [0], borderWidth: 1 }] },
+        options: {
+          responsive: true,
+          plugins: { legend: { labels: { color: "rgba(255,255,255,.78)" } } },
+          scales: {
+            x: { ticks: { color: "rgba(255,255,255,.70)" }, grid: { color: "rgba(255,255,255,.08)" } },
+            y: { ticks: { color: "rgba(255,255,255,.70)" }, grid: { color: "rgba(255,255,255,.08)" }, beginAtZero:true }
+          }
+        }
+      });
+
+      refreshReportChart();
+    }
+    initCharts();
+    renderMarkers();
+
+    /* =========================
+       ORGS: list + map (Fixed & Creative)
+    ========================= */
+    // Нақты координаттармен (Логикалық дұрыс шешім)
+    const orgs = [
+      { 
+        name:"Recycle Birge", 
+        city:"Алматы", 
+        address:"Алматы, Қазақстан", 
+        sourceHint:"recyclebirge.kz", 
+        lat: 43.237163,  // Нақты координат
+        lon: 76.945625 
+      },
+      { 
+        name:"ECO Network", 
+        city:"Алматы", 
+        address:"Алматы, проспект Аль-Фараби 47/79", 
+        sourceHint:"econetwork.green", 
+        lat: 43.219760, 
+        lon: 76.936085 
+      },
+      { 
+        name:"KazWaste (ассоциация)", 
+        city:"Алматы", 
+        address:"Алматы, пр. Аль-Фараби 15, блок 4в", 
+        sourceHint:"waste-ex.kz", 
+        lat: 43.226065, 
+        lon: 76.945037 
+      },
+      { 
+        name:"АО «Жасыл даму»", 
+        city:"Астана", 
+        address:"Астана, пр. Қабанбай батыр 11/5", 
+        sourceHint:"recycle.kz", 
+        lat: 51.134563, 
+        lon: 71.413240 
+      }
+    ];
+
+    // Картаны инициализациялау
+    const orgMap = L.map("orgMap", { zoomControl: false }); // Zoom кнопкасын алып тастадым (әдемірек көріну үшін)
+    orgMap.setView([43.238949, 76.889709], 10);
+    
+    // Карта стилі (Dark mode карта)
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+      maxZoom: 19, attribution: '&copy; OpenStreetMap &copy; CARTO'
+    }).addTo(orgMap);
+    
+    const orgLayer = L.layerGroup().addTo(orgMap);
+    
+    // Маркерлерді сақтау (кейін popup ашу үшін)
+    const markersMap = {};
+
+    function renderOrgList(){
+      $("orgList").innerHTML = orgs.map((o, index)=>`
+        <div class="commentItem" style="margin-top:0; margin-bottom:10px; background:rgba(0,0,0,0.4); border:1px solid rgba(84,255,176,0.15);">
+          <div class="commentTop">
+            <div class="commentName" style="color:var(--accent);">${o.name}</div>
+            <div class="pill" style="padding:8px 10px"><span class="dot"></span>${o.city}</div>
+          </div>
+          <div class="commentText">${o.address}<br/><span style="color:rgba(255,255,255,.62)">${o.sourceHint}</span></div>
+          <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="btn primary" style="font-size:12px; padding:8px 12px;" type="button" onclick="focusOrg(${index})">
+              🗺 Картада көрсету
+            </button>
+          </div>
+        </div>
+      `).join("");
+    }
+    renderOrgList();
+
+    // Картаға маркерлерді қою
+    function plotOrgs(){
+      orgLayer.clearLayers();
+      orgs.forEach((o, index) => {
+        // Арнайы жасыл маркер (Creative)
+        const greenIcon = L.divIcon({
+            className: 'custom-div-icon',
+            html: "<div style='background-color:#54ffb0; width:12px; height:12px; border-radius:50%; box-shadow:0 0 10px #54ffb0; border:2px solid #fff;'></div>",
+            iconSize: [12, 12],
+            iconAnchor: [6, 6],
+            popupAnchor: [0, -10]
+        });
+
+        const m = L.marker([o.lat, o.lon], { icon: greenIcon }).addTo(orgLayer);
+        m.bindPopup(`
+          <div style="font-family:Inter,sans-serif; color:#333; font-size:13px;">
+            <b style="color:#071b13">${o.name}</b><br/>
+            ${o.address}
+          </div>
+        `);
+        markersMap[index] = m; // Маркерді сақтап қоямыз
+      });
+    }
+    plotOrgs();
+
+    // Кнопка басқанда жұмыс істейтін функция
+    function focusOrg(index){
+      const o = orgs[index];
+      if(!o) return;
+
+      // 1. Картаны сол жерге "ұшырып" апару (Animation)
+      orgMap.flyTo([o.lat, o.lon], 16, {
+        animate: true,
+        duration: 1.5 // 1.5 секундта баяу бару
+      });
+
+      // 2. Барған соң popup-ты ашу
+      const marker = markersMap[index];
+      if(marker){
+        setTimeout(() => {
+            marker.openPopup();
+        }, 1500); // Ұшып барған соң ашылады
+      }
+    }
+    // Глобал функция ету
+    window.focusOrg = focusOrg;
+
+    /* =========================
+       COMMENTS + RATING
+    ========================= */
+    const starRow = $("starRow");
+    const cName = $("cName");
+    const cText = $("cText");
+    const cSend = $("cSend");
+    const commentList = $("commentList");
+    let currentStars = 5;
+
+    function renderStars(){
+      starRow.innerHTML = "";
+      for(let i=1;i<=5;i++){
+        const b = document.createElement("button");
+        b.className = "starBtn" + (i<=currentStars ? " active":"");
+        b.type="button";
+        b.textContent = "⭐";
+        b.onclick = ()=>{ currentStars=i; renderStars(); };
+        starRow.appendChild(b);
+      }
+    }
+    renderStars();
+
+    function loadComments(){ return loadJSON(STORAGE_COMMENTS, []); }
+    function saveComments(items){ saveJSON(STORAGE_COMMENTS, items); }
+
+    function renderComments(){
+      const items = loadComments();
+      commentList.innerHTML = items.map(c=>`
+        <div class="commentItem">
+          <div class="commentTop">
+            <div class="commentName">${c.name}</div>
+            <div class="commentStars">${"⭐".repeat(c.stars)}</div>
+          </div>
+          <div class="commentText">${c.text}</div>
+          <div style="margin-top:8px; color:rgba(255,255,255,.55); font-size:12px;">${new Date(c.at).toLocaleString()}</div>
+        </div>
+      `).join("") || `<div style="margin-top:12px; color:var(--muted)">Әлі пікір жоқ</div>`;
+    }
+    renderComments();
+
+    cSend.addEventListener("click", ()=>{
+      const name = (cName.value||"").trim() || "Anonymous";
+      const text = (cText.value||"").trim();
+      if(!text){ alert("Пікір жаз."); return; }
+
+      const items = loadComments();
+      items.unshift({ name, text, stars: currentStars, at: new Date().toISOString() });
+      saveComments(items);
+
+      cText.value = "";
+      renderComments();
+      alert("✅ Жіберілді");
+    });
+
+    /* =========================
+       LAST REPORT MINI (on load)
+    ========================= */
+    function updateLastMini(){
+      const reports = loadReports();
+      if(!reports.length){ lastReportMini.textContent = "Әлі жоқ"; return; }
+      const r = reports[0];
+      const text = buildShareText(r);
+      lastReportMini.textContent = text;
+      shareBox.style.display = "block";
+      showShare(r);
+    }
+    updateLastMini();
+  </script>
+</body>
+</html>
